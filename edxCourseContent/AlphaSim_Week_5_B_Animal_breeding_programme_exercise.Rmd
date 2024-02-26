@@ -1,0 +1,456 @@
+---
+title: "Animal breeding programme - Exercise"
+author: "Ivan Pocrnic and Gregor Gorjanc"
+date: '2022-07-12'
+---
+
+# Introduction
+
+One of the purposes of simulations is to test multiple alternative breeding scenarios before deploying a breeding programme in the real-life. In this independent exercise, you will simulate two alternative animal breeding programmes with overlapping generations and different selection intensities in males and females. In the first scenario you will repeat the breeding programme from the screencast, while in the second scenario you will reduce generation interval (and to maintain the size of the breeding programme change the selection intensity) on the male side. You will keep the same overall structure as in the screencast, but mate 1000 cows of different ages mated with 25 bulls instead of 50. To enable a fair comparison of the alternative breeding scenarios, they should start from the same point. Hence you will keep the initial base population of sires and dams for the two scenarios. Finally, you will compare the response to selection between simulated breeding scenarios. 
+
+You will achieve all this by:
+
+- Simulating a base population,
+- Storing miscellaneous information,
+- Creating initial parent populations and use them as a starting point for both scenarios,
+- Simulating two alternative breeding scenarios, 
+- Recording data,
+- Simulating multiple years, and
+- Analysing response to selection between the breeding scenarios.
+
+# Base population
+
+Start the simulation by simulating founder genomes, defining a trait, and initiating a base population. You will simulate a cattle genome with 30 chromosomes for 2000 founders. The trait under selection will be weaning weight of calves, with a mean of 250 kg, phenotype variance of 400 kg$^2$, and heritability of 0.3. The trait will have a simple additive genetic architecture with 100 QTL on each chromosome.
+
+```{r}
+# Clean the working environment
+rm(list = ls())
+
+# Set the default plot layout
+par(mfrow = c(1, 1))
+
+# Load AlphaSimR
+library(AlphaSimR)
+
+# Simulate founder genomes
+# ... this runMacs() call will take quite a bit of time! 
+# founderGenomes = runMacs(nInd = 2000,
+#                          nChr = 30,
+#                          segSites = 100,
+#                          species = "CATTLE")
+# ... therefore, we will speed up the demonstration with the quickHaplo()
+# (we recommend use of runMacs() for research purposes!)
+founderGenomes = quickHaplo(nInd = ???,
+                            nChr = ???,
+                            segSites = ???)
+
+# Global simulation parameters
+SP = SimParam$new(founderGenomes)
+
+SP$setSexes("yes_sys")
+
+phenoVar = ???
+heritability = ???
+genVar = phenoVar * heritability
+SP$addTraitA(nQtlPerChr = ???, mean = ???, var = genVar)
+
+# Base population
+founders = newPop(???)
+
+# Phenotype the base population
+founders = setPheno(pop = ???, h2 = ???)
+```
+
+# Miscellaneous information
+
+As in the screencast, you will work with individuals born in different years. You will store these individuals in different objects and you will also combine the individuals with different birth years and from different scenarios into one object. To keep track of their years or birth, you will store this information in the `misc` (=miscellaneous) slot of AlphaSimR populations.
+
+```{r}
+# Assign year of birth for the founders
+year = 0
+founders = setMisc(x = ???,
+                   node = "yearOfBirth",
+                   value = ???)
+head(getMisc(x = ???, node = "yearOfBirth"))
+```
+
+# Initial parent populations
+
+Structure of the simulated breeding programme is shown in Figure 1. In the following we explain this breeding structure and show how to simulate it.
+
+```{r, fig.align="center", fig.cap="Figure 1: Simulated beef breeding programme with 1000 cows (dams) and 50 bulls (sires) of different ages and different selection intensity.", echo=FALSE}
+knitr::include_graphics("images/beef_scheme.png")
+```
+
+You will take founder males and select 50 superior males as sires (fathers) of the initial year of each breeding programme. These 50 sires will be represented by 40 young sires (1 year old) and 10 older sires (2 years old). In further years, the two breeding scenarios will differ by the number of new sires selected and used. 
+
+```{r}
+males = selectInd(pop = founders, nInd = ???, use = "???", sex = "???")
+baseSires2 = males[ 1:10]
+baseSires2 = setMisc(x = baseSires2,
+                 node = "yearOfBirth",
+                 value = -1)
+baseSires1 = males[11:50]
+baseSires1 = setMisc(x = baseSires1,
+                 node = "yearOfBirth",
+                 value = 0)
+baseSires = c(???, ???)
+nInd(baseSires)
+```
+
+Inspect year of birth for the sires.
+
+```{r}
+table(unlist(getMisc(x = ???, node = "???")))
+```
+
+For generating the selection candidates and future production females you need a sufficient number of dams (mothers). Specifically, to generate 1000 progeny every year, you will need 1000 dams. These dams will be assumed to have different ages because cows stay in the herd for multiple years and have multiple calves through their lifetime. You will assume that dams stay in the herd for up to 5 years, but that every year we only keep a predefined number of the phenotypically best dams.
+
+First, we need to select only female founders.
+
+```{r}
+cat("Founder females\n")
+(nFemales = sum(founders@sex == "F"))
+females = selectInd(pop = ???, nInd = ???, use = "???", sex = "???")
+
+# Here we define how many dams are kept per age group
+nDams1 = ???
+nDams2 = ???
+nDams3 = ???
+nDams4 = ???
+nDams5 = ???
+sum(nDams1, nDams2, nDams3, nDams4, nDams5)
+```
+
+Now we will select the oldest group of dams. 
+
+```{r}
+cat("Dams5\n")
+(start = 1)
+(end = ???)
+baseDams5 = females[start:end]
+baseDams5 = setMisc(x = ???,
+                node = "yearOfBirth",
+                value = -4)
+nInd(baseDams5)
+```
+
+And second oldest group of dams.
+
+```{r}
+cat("Dams4\n")
+(start = end + 1)
+(end = start - 1 + ???)
+baseDams4 = females[start:end]
+baseDams4 = setMisc(x = ???,
+                node = "yearOfBirth",
+                value = -3)
+nInd(baseDams4)
+```
+
+And the other group of dams.
+
+```{r}
+cat("Dams3\n")
+(start = end + 1)
+(end = start - 1 + ???)
+baseDams3 = females[start:end]
+baseDams3 = setMisc(x = ???,
+                node = "yearOfBirth",
+                value = -2)
+nInd(baseDams3)
+
+cat("Dams2\n")
+(start = end + 1)
+(end = start - 1 + ???)
+baseDams2 = females[start:end]
+baseDams2 = setMisc(x = ???,
+                node = "yearOfBirth",
+                value = -1)
+nInd(baseDams2)
+
+cat("Dams1\n")
+(start = end + 1)
+(end = start - 1 + ???)
+baseDams1 = females[start:end]
+baseDams1 = setMisc(x = ???,
+                node = "yearOfBirth",
+                value = 0)
+nInd(baseDams1)
+```
+
+```{r}
+baseDams = c(baseDams5, ???, ???, ???, baseDams1)
+nInd(baseDams)
+```
+
+Inspect year of birth for the dams
+
+```{r}
+table(unlist(getMisc(x = baseDams, node = "yearOfBirth")))
+```
+
+# Data recording
+
+To record data from multiple populations, you will define a data recording function `recordData()`. As an input, the function will accept:
+1) a data frame (`data` argument) that will collate the information from multiple AlphaSimR populations,
+2) an AlphaSimR population (`pop` argument) whose data we will save,
+3) a year of use (`yearOfUse` argument) to denote parent usage, and
+4) a scenario name (`scenario` argument) to distinguish different scenarios.
+
+In this exercise, you will store animal identification (`id`), parents' identification's (`father` and `mother`), sex (`sex`), genetic value (`gv`), phenotype value (`pheno`), year of birth (`yearOfBirth`), year of use for parents (`yearOfUse`), and scenario name (`scenario`).
+
+```{r}
+# Function to record and collate data
+recordData <- function(data = NULL, pop, yearOfUse = NA, scenario = NA) {
+  popData = data.frame(id          = pop@id,
+                       father      = pop@father,
+                       mother      = pop@mother,
+                       sex         = pop@sex,
+                       gv          = pop@gv[, "Trait1"],
+                       pheno       = pop@pheno[, "Trait1"],
+                       yearOfBirth = unlist(getMisc(x = pop, node ="yearOfBirth")),
+                       yearOfUse   = yearOfUse,
+                       scenario    = scenario)
+  # Manage first instance of calling this function, when data is NULL
+  if (is.null(data)) {
+    ret = popData
+  } else {
+    ret = rbind(data, popData)
+  }
+  return(ret)
+}
+```
+
+You will create two data frames. The first one will be called `data4AllAnimals`, where we will store the data for all animals. The second one will be called `data4Parents`, where you will store data for all and new parents separately.
+
+```{r}
+data4AllAnimals = recordData(pop = ???,
+                             scenario = "Founders")
+head(data4AllAnimals)
+```
+
+```{r}
+data4AllParents = recordData(pop = c(???, ???), 
+                             yearOfUse = ???, 
+                             scenario = "Founders") # year is 0 at this stage in the script
+head(data4AllParents)
+```
+
+```{r}
+data4NewParents = recordData(pop = c(???, ???), 
+                             scenario = "Founders")
+head(data4NewParents)
+```
+
+# Multiple years of the two scenarios
+
+You will simulate 20 years of each of the two breeding scenarios. In both scenarios you will generate 1000 progeny from 1000 dams, that will be used up to 5 years, with only phenotypically best dams staying in the herd for longer. The two scenarios will differ only on the male side. In scenario 1, you will select 40 young (1 year old) and 10 old (2 years old) as shown on Figure 1 - the first scenario is therefore continuation of the initiated baseline above. Let's do this, before discussing Scenario 2.
+
+During this simulation you will record the data, as before, for all the newly generated individuals, all parents, and newly selected parents.
+
+```{r}
+# Initiate the sires and dams for the Scenario 1 
+sires = baseSires
+sires1 = baseSires1
+  
+dams = baseDams
+dams1 = baseDams1
+dams2 = ???
+dams3 = ???
+dams4 = ???
+```
+
+```{r}
+# Set the current scenario name
+currentScenario = "Scenario_1"
+
+for (year in 1:20) {
+  cat("Working on the year:", year, "\n")
+  
+  # Generate progeny from current dams and sires
+  candidates = randCross2(males = ???, females = ???, nCrosses = nInd(dams))
+  candidates = setMisc(x = ???, node = "yearOfBirth", value = ???)
+  candidates = setPheno(???, h2 = ???)
+  
+  # Record data for all newborn animals
+  data4AllAnimals = recordData(data = ???,
+                               pop = ???,
+                               scenario = currentScenario)
+
+  # Record data for the used sires and dams (young and old)
+  data4AllParents = recordData(data = ???,
+                               pop = c(???, ???),
+                               yearOfUse = ???,
+                               scenario = ???)
+
+  # Update and select sires
+  sires2 = selectInd(pop = ???, nInd = ???, use = "???")
+  sires1 = selectInd(pop = ???, nInd = ???, use = "???", sex = "???")
+  sires = c(???, ???)
+  
+  # Update and select dams
+  dams5 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams4 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams3 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams2 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams1 = selectInd(pop = ???, nInd = ???, use = "???", sex = "???")
+  dams = c(dams5, ???, ???, ???, ???)
+
+  # Record data for the newly selected sires and dams (just the new ones)
+  data4NewParents = recordData(data = ???,
+                               pop = c(???, ???),
+                               scenario = ???)
+}
+```
+
+In scenario 2, you will select only 25 young (1 year old), that is, no old sires, as shown on Figure 2. 
+
+```{r, fig.align="center", fig.cap="Figure 2: Simulated beef breeding programme with 1000 cows (dams) and 25 bulls (sires) of different ages and different selection intensity.", echo=FALSE}
+knitr::include_graphics("images/beef_scheme_scenario2.png")
+```
+
+```{r}
+# Initiate the sires and dams for the Scenario 2 
+# To enable a fair comparison, both scenarios have the same starting point
+sires = baseSires
+
+dams = baseDams
+dams1 = baseDams1
+dams2 = ???
+dams3 = ???
+dams4 = ???
+```
+
+```{r}
+# Set the current scenario name
+currentScenario = "Scenario_2"
+
+for (year in 1:20) {
+  cat("Working on the year:", year, "\n")
+  
+  # Generate progeny from current dams and sires
+  candidates = randCross2(males = ???, females = ???, nCrosses = nInd(dams))
+  candidates = setMisc(x = ???, node = "yearOfBirth", value = ???)
+  candidates = setPheno(???, h2 = ???)
+  
+  # Record data for all newborn animals
+  data4AllAnimals = recordData(data = ???,
+                               pop = ???,
+                               scenario = ???)
+
+  # Record data for the used sires and dams (young and old)
+  data4AllParents = recordData(data = ???,
+                               pop = c(???, ???),
+                               yearOfUse = ???,
+                               scenario = ???)
+
+  # Update and select sires
+  sires = selectInd(pop = ???, nInd = ???, use = "???", sex = "???")
+  
+  # Update and select dams
+  dams5 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams4 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams3 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams2 = selectInd(pop = ???, nInd = ???, use = "???")
+  dams1 = selectInd(pop = ???, nInd = ???, use = "???", sex = "???")
+  dams = c(dams5, ???, ???, ???, ???)
+
+  # Record data for the newly selected sires and dams (just the new ones)
+  data4NewParents = recordData(data = ???,
+                               pop = c(???, ???),
+                               scenario = ???)
+}
+```
+
+# Response to selection and accuracy 
+
+To summarise response to selection over the years, you will show mean of phenotype and genetic values for males and females separately because selection intensity is different between the two sexes in this breeding programme. Furthermore, you will show it for newborn animals (selection candidates), all parents, and for selected animals (parents). To do this, you will use `ggplot2` R package introduced in the screencast. The `ggplot2` package is part of the larger collection of R packages designed for tidy data science known as `tidyverse`. Here you will use the following data preparation and plotting code, without delving into details, but we warmly recommend you study tidyverse further (you can start at; https://www.tidyverse.org). 
+
+```{r}
+# Install additional package for tidy data science
+install.packages(pkg = c("tidyverse"), repos = "https://cloud.r-project.org")
+
+# Load the package
+library(tidyverse)
+
+# Range of values
+phenoRange = range(c(data4AllAnimals$pheno, data4AllAnimals$gv))
+
+# Plot mean phenotype value for all newborn animals per year and sex
+summaryAll = data4AllAnimals %>%
+  filter(scenario != "Founders") %>%
+  group_by(scenario, yearOfBirth, sex) %>%
+  summarise(meanPheno = mean(pheno))
+
+p = ggplot(summaryAll,
+           aes(x = yearOfBirth, y = meanPheno,
+               colour = scenario,
+               linetype = sex)) + 
+  geom_line() +
+  ylim(phenoRange) +
+  xlab("Year of birth") +
+  ylab("Phenotype value (kg)") +
+  ggtitle("Newborn animals") +
+  labs(colour = "Scenario", linetype = "Sex") +
+  theme(legend.position = "top") 
+print(p)
+
+# Plot mean phenotype value for all parents per year and sex
+summaryAllParents = data4AllParents %>%
+  filter(scenario != "Founders") %>%
+  group_by(scenario, yearOfUse, sex) %>%
+  summarise(meanPheno = mean(pheno),
+            meanGv = mean(gv))
+
+p = ggplot(summaryAllParents,
+           aes(x = yearOfUse, y = meanPheno,
+               colour = scenario,
+               linetype = sex)) + 
+  geom_line() +
+  ylim(phenoRange) +
+  xlab("Year of birth") +
+  ylab("Phenotype value (kg)") +
+  ggtitle("Parents") +
+  labs(colour = "Scenario", linetype = "Sex") +
+  theme(legend.position = "top") 
+print(p)
+
+# Plot mean genetic value for all parents per year and sex
+p = ggplot(summaryAllParents,
+           aes(x = yearOfUse, y = meanGv,
+               colour = scenario,
+               linetype = sex)) + 
+  geom_line() +
+  ylim(phenoRange) +
+  xlab("Year of birth") +
+  ylab("Genetic value (kg)") +
+  ggtitle("Parents") +
+  labs(colour = "Scenario", linetype = "Sex") +
+  theme(legend.position = "top") 
+print(p)
+
+# Plot mean genetic value for newly selected parents per year and sex
+summaryNewParents = data4NewParents %>%
+  filter(scenario != "Founders") %>%
+  group_by(scenario, yearOfBirth, sex) %>%
+  summarise(meanPheno = mean(pheno),
+            meanGv = mean(gv))
+
+p = ggplot(summaryNewParents,
+           aes(x = yearOfBirth, y = meanGv,
+               colour = scenario,
+               linetype = sex)) + 
+  geom_line() +
+  ylim(phenoRange) +
+  xlab("Year of birth") +
+  ylab("Genetic value (kg)") +
+  ggtitle("New parents") +
+  labs(colour = "Scenario", linetype = "Sex") +
+  theme(legend.position = "top") 
+print(p)
+```
+
+What do the results show you about these two breeding scenarios?
+
+# EXTRA: Repeat this exercise with different number of sires (for example, 10)

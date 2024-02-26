@@ -1,0 +1,327 @@
+---
+title: "Plant breeding programme - Exercise"
+author: "Leticia Aparecida de Castro Lara and Gregor Gorjanc"
+date: "2022-07-18"
+---
+
+# Introduction
+
+In this vignette, we will extend the previously presented wheat breeding programme and mimic selection using genomic information, the so-called genomic selection. Initially proposed by Meuwissen et al. (2001), genomic selection is an efficient approach to increasing genetic gains per unit of time by enabling increased selection accuracy, increased selection intensity, and reduced generation interval. Do you recall how these factors feature in the expanded breeder's equation?
+
+The key idea of genomic selection is 1) to use phenotype and genome data from past individuals to train a prediction model and 2) to use the prediction model and genome data from new individuals to predict their phenotype performance. The prediction model is based on estimated associations between variation in phenotypes and variation along the genome. These estimates are obtained for many positions in the genome, for genomic markers. The most common type of genomic makers used for this purpose is bi-allelic Single Nucleotide Polymorphisms (SNPs), which is what `AlphaSimR` simulates. Once these phenotype-genome associations are estimated, we can predict phenotype performance for any individual that is genotyped for the chosen set of SNP markers.
+
+To simplify this exercise, we will assume a set accuracy of genomic selection, so we will only mimic genomic selection. Namely, to successfully integrate genomic selection into a breeding programme, we have to attain a sufficient level of accuracy for genomic predictions. This accuracy is a function of the training population size, trait heritability, relationship between training and breeding populations and other factors, such as statistical methods used to estimate marker associations (Meuwissen et al., 2001). While running a full-fledged breeding programme with genomic selection with AlphaSimR is possible (see Gaynor et al., 2017), it's beyond the scope of this exercise.
+
+To show how one could use genomic selection in a wheat breeding programme, we will first perform 10 years of phenotype selection in a conventional wheat breeding programme as presented previously (Figure 1). After that, we will run another 10 years of the same type of selection or a modified breeding programme with genomic selection, which will increase the accuracy of selection early in the breeding cycle and reduce generation interval by an earlier selection of parents.
+
+We will divide the whole simulation into the following six steps:
+
+- Defining global simulation parameters,
+- Simulating founders,
+- Populating the breeding programme scheme,
+- Advancing populations through the breeding scheme over years,
+- Advancing years with phenotypic and genomic selection, and
+- Summarising the genetic change between scenarios.
+
+For each step, we have given you instructions with an `AlphaSimR` template code to complete (replace ??? with an appropriate code).
+
+```{r, fig.align="center", fig.cap="Figure 1: Simulated wheat breeding programme with Parents, $F_{1}$ progeny (F1), Headrows (HDRW), Preliminary Yield Trial (PYT), Advanced Yield Trial (AYT), Elite Yield Trial (EYT) and a released Variety. Adapted from Gaynor et al. (2017).", echo=FALSE}
+knitr::include_graphics("images/wheat_scheme.png")
+```
+
+# Global parameters
+
+This is the same as we covered in the screencast.
+
+```{r}
+# Clean the working environment
+rm(list = ls())
+
+# Set the default plot layout
+par(mfrow = c(1, 1))
+
+library(AlphaSimR)
+
+# Number of crosses per year
+nCrosses = 30
+
+# DH lines produced per cross
+nDH = 50
+
+# The maximum number of DH lines per cross to enter the PYT
+# nCrosses*famMax must be greater than or equal to nPYT
+famMax = 10
+
+# Genotypes (entries) per yield trial
+nPYT = 300
+nAYT = 25
+nEYT = 5
+
+# Effective replication of yield trials in terms of locations
+# (this concept will be used to increase the amount of phenotype information over
+#  the successive stages of the breeding programme)
+repHDRW = 1/4
+repPYT = 1
+repAYT = 4
+repEYT = 8
+
+# Number of QTLs per chromosome
+nQTLs = 50
+```
+
+# Founders
+
+This is the same as we covered in the screencast.
+
+```{r}
+# Simulate founder genomes
+# (this will take some time ... - you can use quickHaplo() instead if you are in a rush!)
+founderGenomes = runMacs(nInd = 30, 
+                         nChr = 21, 
+                         segSites = nQTLs,
+                         inbred = TRUE, 
+                         species = "WHEAT")
+if (FALSE) {
+  founderGenomes = quickHaplo(nInd = 30,
+                              nChr = 21,
+                              segSites = nQTLs,
+                              inbred = TRUE)
+}
+
+# Set simulation parameters
+SP = SimParam$new(founderGenomes)
+SP$addTraitAG(nQtlPerChr = nQTLs, mean = 4, var = 0.1, varGxE = 0.2)
+VarE = 0.4
+
+# Founding parents
+Parents = newPop(founderGenomes)
+```
+
+# Populating the breeding programme
+
+This is the same as we covered in the screencast.
+
+```{r}
+# Populate breeding programme
+for (year in 1:7) {
+  # F1
+  F1 = randCross(Parents, nCrosses)
+  if (year < 7) {
+    # Doubled Haploids
+    DH = makeDH(F1, nDH)
+  }
+  if (year < 6) {
+    # Headrows
+    HDRW = setPheno(DH, varE = VarE, reps = repHDRW)
+  }
+  if (year < 5) {
+    # Preliminary Yield Trial
+    PYT = selectWithinFam(HDRW, nInd = famMax, use = "pheno")
+    PYT = selectInd(PYT, nInd = nPYT, use = "pheno")
+    PYT = setPheno(PYT, varE = VarE, reps = repPYT)
+  }
+  if (year < 4) {
+    # Advanced Yield Trial
+    AYT = selectInd(PYT, nInd = nAYT, use = "pheno")
+    AYT = setPheno(AYT, varE = VarE, reps = repAYT)
+  }
+  if (year < 3) {
+    # Elite Yield Trial
+    EYT = selectInd(AYT, nEYT, use = "pheno")
+    EYT = setPheno(EYT, varE = VarE, reps = repEYT)
+  }
+  if (year < 2) {
+    # Selecting Variety
+    Variety = selectInd(EYT, nInd = 1, use = "pheno")
+  }
+}
+```
+
+# Advancing years with phenotypic selection
+
+This is the same as we covered in the screencast, with the addition of using `save.image()` to save the state of the simulation at year 10 (out of 20) for comparison of different scenarios (phenotype selection vs genomic selection). We will also be calculating the accuracy of selection in different stages of a breeding cycle. We will run the genomic selection scenario in the next part of this script.
+
+```{r}
+# Creating empty vectors to store genetic values
+nYears = ???
+output = data.frame(year = 1:nYears,
+                    meanGPYT = numeric(nYears),
+                    varGPYT = numeric(nYears),
+                    accEYT = numeric(nYears),
+                    accAYT = numeric(nYears),
+                    accPYT = numeric(nYears),
+                    accHDRW = numeric(nYears))
+
+for (year in 1:nYears) {
+  # Select Variety
+  Variety = selectInd(EYT, nInd = 1, use = "pheno")
+
+  # Elite Yield Trial
+  EYT = selectInd(AYT, nInd = nEYT, use = "pheno")
+  EYT = setPheno(EYT, varE = VarE, reps = repEYT)
+
+  # Advanced Yield Trial
+  AYT = selectInd(PYT, nInd = nAYT, use = "pheno")
+  AYT = setPheno(AYT, varE = VarE, reps = repAYT)
+
+  # Preliminary Yield Trial
+  PYT = selectWithinFam(HDRW, nInd = famMax, use = "pheno")
+  PYT = selectInd(PYT, nInd = nPYT, use = "pheno")
+  PYT = setPheno(PYT, varE = VarE, reps = repPYT)
+
+  # Headrows
+  HDRW = setPheno(DH, varE = VarE, reps = repHDRW)
+
+  # Doubled Haploids
+  DH = makeDH(F1, nDH)
+
+  # F1 and Parents
+  Parents = c(EYT, AYT)
+  F1 = randCross(Parents, nCrosses)
+
+  # Report results
+  output$meanGPYT[year] = meanG(???)
+  output$varGPYT[year] = varG(???)
+  output$accEYT[year] = cor(???@gv, ???@pheno)
+  output$accAYT[year] = cor(???@gv, ???@pheno)
+  output$accPYT[year] = cor(???@gv, ???@pheno)
+  output$accHDRW[year] = cor(???@gv, ???@pheno)
+
+  # Save the state of simulation
+  if (year == 10) {
+    save.image(file = "year10.RData")
+  }
+}
+outputPS = output
+```
+
+We can now quickly evaluate the genetic gain and accuracy of selection at every stage of the breeding cycle by looking at the saved results and calculating average accuracy over the last 10 years of breeding.
+
+```{r}
+View(outputPS)
+mean(outputPS$acc???[11:20]) # repeat as needed
+```
+
+What can you say about the realised accuracies of selection?
+
+# Advancing years with phenotypic and genomic selection
+
+We will now mimic the use of genomic selection in the breeding programme. We will leverage it for two breeding actions. First, to advance individuals from preliminary to advanced yield trials (the idea here is that accuracy of selection with genomic prediction should increase). Second, to select parents from preliminary, advanced, and elite yield trials instead of just advanced and elite yield trials (the idea here is to reduce generation interval by selecting individuals from earlier stages of a breeding cycle - see Figure 1).
+
+We will start with genomic selection in year 11 by loading the saved simulation state in year 10 and continuing with a modified breeding programme.
+
+To mimic genomic selection, we will simulate estimates of genetic values with a set accuracy and save them in the `ebv` slot of AlphaSimR populations. This simulation will mimic the genomic prediction part of genomic selection. We use the `ebv` slot because it can be used as a criterion by the AlphaSimR selection functions instead of the phenotype.
+
+We will assume that these genomic predictions increase the accuracy of the preliminary yield trial. We will assume that it adds an equivalent of a tripled number of replicates, that is, going from 1 (`repPYT`) to 3 (`repPYT * 3`) (hence we will simulate a phenotype with more replicates, hence reduced variance and higher accuracy and save it in the `ebv` slot). We will not assume any increase in accuracy for the advanced and elite yield trials because they already have a substantial number of trial replicates (hence we will assign their phenotype to the `ebv` slot).
+
+```{r}
+# Load state of simulation from year 10
+load(file = "???")
+
+# Genomic predictions (we only use pheno() and setPheno() as a proxy here)
+EYT@ebv = pheno(???)
+AYT@ebv = pheno(???)
+PYT@ebv = setPheno(???, varE = VarE, reps = repPYT * ???, onlyPheno = TRUE)
+
+for (year in 11:nYears) {
+  # Selecting variety
+  variety = selectInd(EYT, nInd = 1, use = "pheno")
+
+  # Elite Yield Trial
+  EYT = selectInd(AYT, nInd = nEYT, use = "pheno")
+  EYT = setPheno(EYT, varE = VarE, reps = repEYT)
+
+  # Advanced Yield Trial (using ebv instead of pheno)
+  AYT = selectInd(PYT, nInd = nAYT, use = "ebv") # note the change from "pheno" to "ebv"!
+  AYT = setPheno(AYT, varE = VarE, reps = repAYT)
+
+  # Preliminary Yield Trial
+  PYT = selectWithinFam(HDRW, nInd = famMax, use = "pheno")
+  PYT = selectInd(PYT, nInd = nPYT, use = "pheno")
+  PYT = setPheno(PYT, varE = VarE, reps = repPYT)
+
+  # Headrows
+  HDRW = setPheno(DH, varE = VarE, reps = repHDRW)
+
+  # Doubled Haploids
+  DH = makeDH(F1, nDH)
+
+  # Genomic predictions (we only use pheno() & setPheno() as a proxy here)
+  EYT@ebv = ???
+  AYT@ebv = ???
+  PYT@ebv = ???
+
+  # Parents and F1s
+  Parents = selectInd(c(EYT, AYT, PYT), nInd = nInd(Parents), use = "???")
+  F1 = randCross(Parents, nCrosses)
+
+  # Report results
+  output$meanGPYT[year] = meanG(???)
+  output$varGPYT[year] = varG(???)
+  output$accEYT[year] = cor(???@gv, ???@pheno)
+  output$accAYT[year] = cor(???@gv, ???@pheno)
+  output$accPYT[year] = cor(???@gv, ???@ebv)
+  output$accHDRW[year] = cor(???@gv, ???@pheno)
+}
+outputGS = output
+```
+
+```{r}
+View(outputGS)
+mean(outputGS$acc???[11:20]) # repeat as needed
+```
+
+What can you say about the realised accuracies of genomic selection compared to phenotype selection?
+
+# Summarising the genetic change between scenarios
+
+Plot the trends in the mean of genetic values as well as selection accuracy for each scenario. Furthermore, estimate the rate of change in these metrics for each scenario by fitting a linear trend (=linear regression) line using the `lm()` function.
+
+```{r}
+# Plot mean of genetic values over time
+rangeMean = range(c(outputPS$???, outputGS$???))
+plot(x = outputGS$???, y = outputGS$???, type = "l",
+     xlab = "Year", ylab = "Mean of genetic values", ylim = rangeMean,
+     lwd = 2, lty = 2, col = "purple")
+lines(x = outputPS$???, y = outputPS$???, lwd = 2)
+legend(x = "topleft", title = "Selection",
+       legend = c("Genomic", "Phenotype"), bty = "n",
+       lwd = 2, lty = c(2, 1), col = c("purple", "black"))
+
+# Calculate trend line for each type scenario
+fitGS = lm(??? ~ year, data = outputGS[outputGS$year > 10, ])
+abline(coef(fitGS), col = "purple", lty = 2)
+print(coef(???))
+fitPS = lm(??? ~ year, data = outputPS[outputPS$year > 10, ])
+abline(coef(fitPS), col = "black")
+print(coef(???))
+```
+```{r}
+# Plot accuracy of selection over time
+rangeAcc = range(c(outputPS$???, outputGS$??))
+plot(x = outputGS$year, y = outputGS$???, type = "l",
+     xlab = "Year", ylab = "Accuracy of selection", ylim = rangeAcc,
+     lwd = 2, lty = 2, col = "purple")
+lines(x = outputPS$year, y = outputPS$???, lwd = 2)
+legend(x = "topleft", title = "Selection",
+       legend = c("Genomic", "Phenotype"), bty = "n",
+       lwd = 2, lty = c(2, 1), col = c("purple", "black"))
+
+# Calculate trend line for each type scenario
+fitGS = lm(??? ~ year, data = outputGS[outputGS$year > 10, ])
+abline(coef(fitGS), col = "purple", lty = 2)
+print(coef(???))
+fitPS = lm(??? ~ year, data = outputPS[outputPS$year > 10, ])
+abline(coef(fitPS), col = "black")
+print(coef(???))
+```
+
+What can you say about the results?
+
+# EXTRA: Repeat this exercise with different accuracy of genomic selection (manipulate k in `repPYT * k`) and selection of parents (try selecting them from only `c(AYT, PYT)`, or even only just `PYT`).
+
+# References
+
+Gaynor R.C., Gorjanc G., Bentley A.R., Ober E.S, Howell P., Jackson R., Mackay I.J., Hickey, J.M. (2017) A two-part strategy for using genomic selection to develop inbred lines. Crop Science, 57:5, 2372--2386, https://doi.org/10.2135/cropsci2016.09.0742
+
+Meuwissen T.H.E., Hayes B.J., Goddard M.E. (2001) Prediction of total genetic value using genome-wide dense marker maps. Genetics, 157:4, 1819--1829, https://doi.org/10.1093/genetics/157.4.1819

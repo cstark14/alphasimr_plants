@@ -1,0 +1,219 @@
+---
+title: 'DNA lottery: trait - Exercise'
+author: "Gregor Gorjanc and Ivan Pocrnic"
+date: "2022-06-22"
+---
+
+# Introduction
+
+In this exercise, you will simulate a base population and look at the randomness of DNA inheritance between parents and progeny (the DNA lottery) and how this process drives variation between genetic and phenotype values of relatives in the following steps:
+
+- Base population,
+- Founders and their values,
+- Progeny populations, 
+- Variation in progeny values, and
+- EXTRA: More chromosomes, sites, and trait complexity.
+
+For each step, we have given you instructions and you have to write `AlphaSimR` code yourself (replace ??? with an appropriate code).
+
+# Base population
+
+Use the `runMacs()` function to simulate 6 individuals (`nInd = 6`), 2 chromosomes (`nChr = 2`), and capture 100 loci per chromosome (`segSites = 100`). Simulate a general population, so you can omit the `species` argument.
+
+```{r}
+# Clean the working environment
+rm(list = ls())
+
+# Set the default plot layout
+par(mfrow = c(1, 1))
+
+# Load AlphaSimR and simulate founder genomes
+library(AlphaSimR)
+founderGenomes = runMacs(???,
+                         ???,
+                         ???)
+```
+
+Create the `SP` object holding simulation parameters. Add a trait with simple additive genetic architecture, controlled by 50 loci on each chromosome, and with the mean of 100 units and genetic variance of 100 unit$^2$.
+
+```{r}
+SP = ???
+SP$addTraitA(???, ???, ???)
+```
+
+Use the `newPop()` function to create a base population of individuals from the founding genomes. Save heritability of 0.3 in a variable `heritability`. Then generate phenotypes for these individuals by using the `setPheno()` function by using the variable `heritability`.
+
+```{r}
+# Base population
+basePop = newPop(???)
+
+# Phenotype base population individuals
+??? = 0.3
+basePop = ???(pop = ???, 
+              h2 = ???)
+```
+
+# Founders and their values
+
+Explore genetic and phenotype values of the base population using `gv()` and `pheno()` functions. 
+
+```{r}
+# Genetic values
+???(basePop)
+
+# Phenotype values
+???(basePop)
+```
+
+# Progeny populations
+
+To show the extent of variation in progeny from given parents, you will now create three crosses, each with 100 progeny. The first cross will be between individuals 1 and 2, the second cross will be between individuals 1 and 4, and the third cross will be between individuals 5 and 6. Therefore you will create 2 half-sib crosses and 1 unrelated cross. To make a cross use the function `makeCross()`. Also, phenotype the progeny using `setPheno` and saved heritability.
+
+```{r}
+# First cross - between founders 1 and 2
+cross12 = makeCross(pop = ???,
+                    crossPlan = ???, ncol = 2),
+                    nProgeny = ???)
+cross12 = setPheno(pop = ???, 
+                   h2 = ???)
+
+# Second cross - between founders 1 and 4
+cross14 = makeCross(pop = ???,
+                    crossPlan = ???, ncol = 2),
+                    nProgeny = ???)
+cross14 = setPheno(pop = ???, 
+                   h2 = ???)
+
+# Third cross - between founders 5 and 6
+cross56 = makeCross(pop = ???,
+                    crossPlan = ???, ncol = 2),
+                    nProgeny = ???)
+cross56 = setPheno(pop = ???, 
+                   h2 = ???)
+```
+
+# Variation in progeny values
+
+Now analyse the variation in genetic and phenotype values within and across crosses. First, save genetic and phenotype values of parents and their progeny.
+
+```{r}
+# Save genetic and phenotype values of parents
+gvPar = ???(basePop)
+gvPar1 = gvPar[???]
+gvPar2 = gvPar[???]
+gvPar4 = gvPar[???]
+gvPar5 = gvPar[???]
+gvPar6 = gvPar[???]
+
+phenoPar = ???(basePop)
+phenoPar1 = phenoPar[???]
+phenoPar2 = phenoPar[???]
+phenoPar4 = phenoPar[???]
+phenoPar5 = phenoPar[???]
+phenoPar6 = phenoPar[???]
+
+# Save genetic and phenotype values of progeny in each cross
+gvCross12 = ???(???)
+gvCross14 = ???(???)
+gvCross56 = ???(???)
+
+phenoCross12 = ???(???)
+phenoCross14 = ???(???)
+phenoCross56 = ???(???)
+```
+
+Calculate the range of genetic and phenotype values across parents and all their progeny.
+
+```{r}
+# Total range to set x-axis in the histograms below
+(rangeGv = range(c(???)))
+
+(rangePheno = range(c(???)))
+
+(rangeVal = range(c(rangeGv, rangePheno)))
+```
+
+To visualise the variation of genetic and phenotype values in parents and among their progeny, plot a histogram of genetic values and then another histogram of phenotype values. Add vertical lines for the values in parents and the average value between the two parents. Colour the parent 1 line as blue, parent 2 line as red, parent 4 line as green, parent 5 line as orange, and parent 6 line as purple. Also, colour the parent average line as black.
+
+```{r}
+by = sqrt(SP$varA) / 2
+bins = seq(from = floor(rangeVal[1]) - by, to = ceiling(rangeVal[2]) + by, by = by)
+
+# First cross - between founders 1 and 2
+par(mfrow = c(2, 1),
+    mar = c(4, 4, 2, 1))
+hist(???, 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Genetic value")
+abline(v = ???, col = "blue", lwd = 3)
+abline(v = ???, col = "red", lwd = 3)
+abline(v = (??? + ???) / 2, col = "black", lwd = 3, lty = 2)
+
+hist(???, 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Phenotype value")
+abline(v = ???, col = "blue", lwd = 3)
+abline(v = ???, col = "red", lwd = 3)
+abline(v = (??? + ???) / 2, col = "black", lwd = 3, lty = 2)
+
+# Second cross - between founders 1 and 4
+par(mfrow = c(2, 1),
+    mar = c(4, 4, 2, 1))
+hist(???, 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Genetic value")
+abline(v = ???, col = "blue", lwd = 3)
+abline(v = ???, col = "green", lwd = 3)
+abline(v = (??? + ???) / 2, col = "black", lwd = 3, lty = 2)
+
+hist(???, 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Phenotype value")
+abline(v = ???, col = "blue", lwd = 3)
+abline(v = ???, col = "green", lwd = 3)
+abline(v = (??? + ???) / 2, col = "black", lwd = 3, lty = 2)
+
+# Third cross - between founders 5 and 6
+par(mfrow = c(2, 1),
+    mar = c(4, 4, 2, 1))
+hist(???, 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Genetic value")
+abline(v = ???, col = "orange", lwd = 3)
+abline(v = ???, col = "darkgray", lwd = 3)
+abline(v = (??? + ???) / 2, col = "black", lwd = 3, lty = 2)
+
+hist(???, 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Phenotype value")
+abline(v = ???, col = "orange", lwd = 3)
+abline(v = ???, col = "darkgray", lwd = 3)
+abline(v = (??? + ???) / 2, col = "black", lwd = 3, lty = 2)
+
+# All crosses together
+par(mfrow = c(2, 1),
+    mar = c(4, 4, 2, 1))
+hist(c(???, ???, ???), 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Genetic value")
+abline(v = ???, col = "blue", lwd = 3)
+abline(v = ???, col = "red", lwd = 3)
+abline(v = ???, col = "green", lwd = 3)
+abline(v = ???, col = "orange", lwd = 3)
+abline(v = ???, col = "darkgray", lwd = 3)
+
+hist(c(???, ???, ???), 
+     xlim = rangePheno, breaks = bins,
+     xlab = "Phenotype value")
+abline(v = ???, col = "blue", lwd = 3)
+abline(v = ???, col = "red", lwd = 3)
+abline(v = ???, col = "green", lwd = 3)
+abline(v = ???, col = "orange", lwd = 3)
+abline(v = ???, col = "darkgray", lwd = 3)
+```
+
+What can you conclude about within and across crosses variation based on these histograms? 
+
+# EXTRA: More chromosomes, sites, and trait complexity
+
+Extend the above exercise by increasing the number of chromosomes (say, use 10), increasing the number of sites per chromosomes (say, use 1000), and trait complexity - simulate a polygenic trait with additive, dominance, and epistatic genetic effects (see the `addTraitADE()` function in the `SimParam()` help page; say, use `SimParam$addTraitADE(nQtlPerChr = 1000, mean = 100, var = 100, meanDD = 0.2, varDD = 0.5, relAA = 0.2)`).

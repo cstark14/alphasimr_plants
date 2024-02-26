@@ -1,0 +1,209 @@
+---
+title: "Single-trait selection - Exercise"
+author: "Leticia Aparecida de Castro Lara, Nelson Lubanga, and Gregor Gorjanc"
+date: "2022-06-22"
+---
+
+# Introduction
+
+In this exercise, you will simulate one generation of single-trait selection and evaluate the response to selection under different:
+
+- Selection accuracy for one generation,
+- Selection intensity for one generation, and
+- EXTRA: Selection intensity over many generations.
+
+For each step, we have given you instructions with an `AlphaSimR` template code to complete (replace ??? with an appropriate code)
+
+# Base population
+
+```{r}
+# Clean the working environment
+rm(list = ls())
+
+# Set the default plot layout
+par(mfrow = c(1, 1))
+
+# Load AlphaSimR, simulate founder genomes, define a trait, and simulate a base population
+library(AlphaSimR)
+founderGenomes = runMacs(nInd = 100,
+                         nChr = 10,
+                         segSites = 100,
+                         species = "MAIZE")
+SP = SimParam$new(founderGenomes)
+SP$addTraitA(nQtlPerChr = 100, mean = 10, var = 1)
+basePop = newPop(founderGenomes)
+```
+
+# Accuracy of selection (one generation)
+
+First, vary the accuracy of selection by varying the heritability of phenotypes used to identify the superior individuals. Assume heritability of 0.5 and select 50 individuals with the highest phenotype values.
+
+```{r}
+# Define parameters for the scenario with trait heritability of 0.5 and 50 selected
+heritability = ???
+nSelected = ???
+
+# Phenotype base population
+basePop = setPheno(basePop, h2 = ???)
+
+# Select the best performing individuals according to their phenotype
+basePopSelected = selectInd(pop = basePop,
+                            nInd = ???,
+                            use = "???")
+
+# Create a new population and phenotype it
+newPop = randCross(basePopSelected, nCrosses = nInd(basePop))
+newPop = setPheno(newPop, h2 = ???)
+
+# Evaluate observed response to selection between generations
+# (as the difference between the mean of genetic values)
+(deltaGObserved_h205 = ???(newPop) - ???(basePop))
+
+# Quantify the intensity of selection
+# (using the function selInt())
+(selInt_h205 = selInt(p = ??? / ???))
+
+# Quantify the accuracy of selection
+# (as the correlation between genetic value and selection criterion)
+(selAcc_h205 = cor(???(basePop), ???(basePop)))
+
+# Quantify the standard deviation of genetic values
+(sdGen_h205 = sqrt(???(basePop)))
+
+# Predict expected response to selection between generations
+(deltaGExpected_h205 = ??? * ??? * ???)
+```
+
+Now repeat the above code, but change trait heritability to 0.1 and save the results into objects `deltaGObserved_h201`, `selInt_h201`, `selAcc_h201`, `sdGen_h201`, and `deltaGExpected_h201`. Then repeat the above code by changing trait heritability to 0.9 and save the results into objects `deltaGObserved_h209`, `selInt_h209`, `selAcc_h209`, `sdGen_h209`, and `deltaGExpected_h209`.
+
+Start with heritability of 0.1.
+
+```{r}
+# Define parameters for the scenario with trait heritability of 0.1 and 50 selected
+???
+```
+
+Now with heritability of 0.9.
+
+```{r}
+# Define parameters for the scenario with trait heritability of 0.9 and 50 selected
+???
+```
+
+# Intensity of selection (one generation)
+
+Now repeat the above code, by changing trait heritability back to 0.5 and changing the number of selected individuals to 20 and save the results into objects `deltaGObserved_n20`, `selInt_n20`, `selAcc_n20`, `sdGen_n20`, and `deltaGExpected_n20`. Then change the number of selected individuals to 10 and save the results into objects `deltaGObserved_n10`, `selInt_10`, `selAcc_n10`, `sdGen_n10`, and `deltaGExpected_n10`.
+
+Start with 20 selected individuals.
+
+```{r}
+# Define parameters for the scenario with trait heritability of 0.5 and 20 selected
+???
+```
+
+Now with 10 selected individuals.
+
+```{r}
+# Define parameters for the scenario with trait heritability of 0.5 and 10 selected
+???
+```
+
+Finally, combine all the results into a data.frame and discuss the observed and expected response to selection across the scenarios.
+
+```{r}
+results = data.frame(h2 = c(0.5, 0.1, 0.9, 0.5, 0.5),
+                     nSelected = c(50, 50, 50, 20, 10),
+                     deltaGObserved = c(deltaGObserved_h205, deltaGObserved_h201, deltaGObserved_h209, deltaGObserved_n20, deltaGObserved_n10),
+                     deltaGExpected = c(deltaGExpected_h205, deltaGExpected_h201, deltaGExpected_h209, deltaGExpected_n20, deltaGExpected_n10),
+                     selInt = c(selInt_h205, selInt_h201, selInt_h209, selInt_n20, selInt_n10),
+                     selAcc = c(selAcc_h205, selAcc_h201, selAcc_h209, selAcc_n20, selAcc_n10),
+                     sdGen = c(sdGen_h205, sdGen_h201, sdGen_h209, sdGen_n20, sdGen_n10))
+print(results)
+```
+
+What do the results show you about changing these parameters?
+
+# EXTRA: Intensity of selection (many generations)
+
+Lastly, use the code below and evaluate the effect of the intensity of selection on response to selection over 50 generations in the following three steps:
+
+  1) Run the simulation with 10 selected individuals and save results into objects `meanGAll_n10` and `varGAll_n10`.
+
+  2) Repeat the simulation with 50 selected individuals and save results into objects `meanGAll_n50` and `varGAll_n50`.
+
+  3) Plot trend in the mean and variance of genetic values over generations for both scenarios and discuss results.
+
+Start with 10 selected individuals.
+
+```{r}
+# Set simulation parameters for the scenario with trait heritability of 0.5 and 10 selected
+heritability = 0.5
+nSelected = ???
+
+# Phenotype base population
+basePop = setPheno(basePop, h2 = heritability)
+
+# Select the best performing individuals according to their phenotype
+basePopSelected = selectInd(pop = basePop,
+                            nInd = nSelected,
+                            use = "pheno")
+
+# Allocate vectors
+nGenerations = ??? + 1 # +1 to store starting generation
+meanGAll = numeric(nGenerations)
+varGAll = numeric(nGenerations)
+
+# Save the starting values
+meanGAll[1] = meanG(basePop)
+varGAll[1] = varG(basePop)
+
+# To make the for loop below simpler we will make a copy of the object basePopSelected
+newPopSelected = basePopSelected
+
+# Selection over many generations
+for (generation in 1:(nGenerations - 1)) {
+  # Cross parents, phenotype progeny, and select new parents
+  newPop = randCross(newPopSelected, nCrosses = nInd(basePop))
+  newPop = setPheno(newPop, h2 = heritability)
+  newPopSelected = selectInd(pop = newPop,
+                             nInd = nSelected,
+                             use = "pheno")
+  # Save summaries
+  meanGAll[1 + generation] = meanG(newPop)
+  varGAll[1 + generation] = varG(newPop)
+}
+
+# Now save these outputs by copying the objects
+meanGAll_n10 = meanGAll
+varGAll_n10 = varGAll
+```
+
+Now with 50 selected individuals.
+
+```{r}
+# Set simulation parameters for the scenario with trait heritability of 0.5 and 50 selected
+???
+```
+
+```{r}
+par(mfrow = c(2, 1),
+    mar = c(4, 4, 1, 1))
+
+# Plot mean of genetic values over time
+meanRanges = range(c(meanGAll_n10, meanGAll_n50))
+plot(x = 1:nGenerations, y = meanGAll_n10, type = "l", col = "black", lwd = 3,
+     xlab = "Generation", ylab = "Mean of genetic values", ylim = meanRanges)
+lines(x = 1:nGenerations, y = meanGAll_n50, type = "l", col = "purple", lty = 2, lwd = 3)
+legend(x = "topleft", legend = c(10, 50), title = "nSelected",
+       lwd = 3, lty = c(1, 2), col = c("black", "purple"), bty = "n")
+
+# Plot variance of genetic values over time
+varRanges = range(c(???, ???))
+plot(x = 1:nGenerations, y = ???, type = "l", col = "black", lwd = 3,
+     xlab = "Generation", ylab = "Variance of genetic values", ylim = varRanges)
+lines(x = 1:nGenerations, y = ???, type = "l", col = "purple", lty = 2, lwd = 3)
+legend(x = "topright", legend = c(10, 50), title = "nSelected",
+       lwd = 3, lty = c(1, 2), col = c("black", "purple"), bty = "n")
+```
+
+What do the results show you about changing these parameters?

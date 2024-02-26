@@ -1,0 +1,132 @@
+---
+title: "Simulating traits - Exercise"
+author: "Alireza Ehsani, Jana Obšteter, and Gregor Gorjanc"
+date: "2022-06-22"
+---
+
+# Introduction
+
+In this exercise, you will simulate a population and analyse its trait variation in five steps:
+
+- Simulate founding genomes,
+- Define traits,
+- Inspect traits,
+- Create a population and phenotype it, and
+- Summarise genetic and phenotype values.
+  
+For each step, we have given you instructions with an `AlphaSimR` template code to complete (replace ??? with an appropriate code).
+
+This exercise deliberately goes beyond the material we have covered up to now. To help you on this pathway, we indicate which functions should be used and we point to their documentation. Embracing this growth mindset is important for mastering AlphaSimR and combining it with other R functionality.
+
+# Simulate founding genomes
+
+```{r}
+# Clean the working environment
+rm(list = ls())
+
+# Set the default plot layout
+par(mfrow = c(1, 1))
+
+library(AlphaSimR)
+
+# Use the following parameters:
+#   * 100 individuals (this simulation will need more time than before)
+#   * 10 chromosomes
+#   * 100 segregating loci (sites) per chromosomes
+#   * MAIZE species
+founderGenomes = runMacs(nInd = ???,
+                         nChr = ???,
+                         segSites = ???,
+                         species = ???)
+```
+
+```{r}
+# Create the simulation parameters object SP from founding genomes
+SP = SimParam$new(???)
+```
+
+# Define traits
+
+```{r}
+# Define four traits with additive genetic effects where:
+#   * Trait 1 has mean 10, genetic variance 1, and is affected by   1 QTL/chromosome
+#   * Trait 2 has mean 10, genetic variance 1, and is affected by  10 QTL/chromosome
+#   * Trait 3 has mean 10, genetic variance 1, and is affected by 100 QTL/chromosome
+#   * Trait 4 has mean 10, genetic variance 3, and is affected by 100 QTL/chromosome
+
+# Add trait 1
+SP$addTraitA(mean = ???, var = ???, nQtlPerChr = ???)
+
+# Add trait 2
+SP$addTraitA(mean = ???, var = ???, nQtlPerChr = ???)
+
+# Add trait 3
+SP$addTraitA(mean = ???, var = ???, nQtlPerChr = ???)
+
+# Add trait 4
+SP$addTraitA(mean = ???, var = ???, nQtlPerChr = ???)
+```
+
+# Inspect traits
+
+```{r}
+# Number of traits
+SP$nTraits
+
+# Distribution of additive QTL effects for each trait
+# Replace ??? with trait numbers
+par(mfrow = c(2, 2),
+    mar = c(4, 4, 1, 1))
+hist(SP$traits[[???]]@addEff, xlab = "Additive effects - trait 1", main = "")
+hist(SP$traits[[???]]@addEff, xlab = "Additive effects - trait 2", main = "")
+hist(SP$traits[[???]]@addEff, xlab = "Additive effects - trait 3", main = "")
+hist(SP$traits[[???]]@addEff, xlab = "Additive effects - trait 4", main = "")
+par(mfrow = c(1, 1))
+```
+
+# Create a population and phenotype it
+
+```{r}
+# Create a population of individuals from founding genomes
+maizePop = newPop(???)
+
+# Simulate phenotypes with the following environmental variances:
+#   * Trait 1 with varE = 0
+#   * Trait 2 with varE = 1
+#   * Trait 3 with varE = 1
+#   * Trait 4 with varE = 2
+maizePop = setPheno(maizePop, varE = c(???, ???, ???, ???))
+```
+
+# Summarise genetic and phenotype values
+
+```{r}
+# Calculate mean and variance of genetic values for individuals in the maizePop
+# using meanG() and varG() functions. Since we have multiple traits, these
+# functions will return vectors and matrices (variances on diagonal and covariances
+# on off-diagonal elements).
+meanG(???)
+varG(???)
+
+# Calculate mean and variance of phenotype values for individuals in the maizePop
+# using meanP() and varP() functions. Since we have multiple traits, these
+# functions will return vectors and matrices (variances on diagonal and covariances
+# on off-diagonal elements).
+meanP(???)
+varP(???)
+
+# Calculate heritabilities for simulated phenotypes in the maizePop
+# Note the use of diag() function to extract only variances from the matrices
+VarG = varG(???)
+VarP = varP(???)
+diag(VarG) / diag(VarP)
+
+# Plot phenotype values as a function of genetic values in the maizePop
+par(mfrow = c(2, 2),
+    mar = c(4, 4, 1, 1))
+plot(x = ???(maizePop)[, 1], y = ???(maizePop)[, 1], xlab = "gv1", ylab = "pheno1")
+plot(x = ???(maizePop)[, 2], y = ???(maizePop)[, 2], xlab = "gv2", ylab = "pheno2")
+plot(x = ???(maizePop)[, 3], y = ???(maizePop)[, 3], xlab = "gv3", ylab = "pheno3")
+plot(x = ???(maizePop)[, 4], y = ???(maizePop)[, 4], xlab = "gv4", ylab = "pheno4")
+par(mfrow = c(1, 1))
+```

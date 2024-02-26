@@ -1,0 +1,143 @@
+---
+title: "Multi-trait selection - Exercise"
+author: "Leticia Aparecida de Castro Lara, Nelson Lubanga, and Gregor Gorjanc"
+date: "2022-06-22"
+---
+
+# Introduction
+
+In this exercise, you will simulate long-term selection with two negatively correlated traits under two scenarios. You will achieve this by:
+
+- Simulating a base population with correlated traits,
+- Selecting on the first trait,
+- Selecting on an index of two traits, and
+- EXTRA: Repeating this exercise with different genetic parameters
+
+For each step, we have given you instructions with an `AlphaSimR` template code to complete (replace ??? with an appropriate code).
+
+# Base population and correlated traits
+
+Start this simulation by simulating founder maize genomes with 10 chromosomes and 100 founders and two negatively correlated traits controlled by 100 QTL per chromosome. Set trait mean to 10 for both traits, genetic variances to 1 and 2), and genetic correlation between the traits -0.5, and heritability to 0.5 for both traits.
+
+```{r}
+# Clean the working environment
+rm(list = ls())
+
+# Set the default plot layout
+par(mfrow = c(1, 1))
+
+# Load AlphaSimR, simulate founder genomes, set the SP object and define traits
+library(AlphaSimR)
+founderGenomes = runMacs(nInd = ???,
+                         nChr = ???,
+                         segSites = ???,
+                         species = "MAIZE")
+SP = SimParam$new(founderGenomes)
+
+# Define the traits
+means = c(???, ???)
+vars = c(???, ???)
+cors = matrix(data = c( 1.0, ???,
+                       ???,  1.0),
+                byrow = TRUE, nrow = 2, ncol = 2)
+h2s = c(???, ???)
+SP$addTraitA(nQtlPerChr = ???, mean = means, var = vars, corA = cors)
+```
+
+Now create a base population and inspect the relationship between the two traits.
+
+```{r}
+# Base population
+basePop = newPop(???)
+
+# Phenotype the population
+basePop = setPheno(???, h2 = h2s)
+
+# Explore genetic relationship between traits by plotting and calculating correlation
+plot(x = ???(???))
+cor(???(???))
+
+# Explore phenotype relationship between traits by plotting and calculating correlation
+plot(x = ???(???))
+cor(???(???))
+```
+
+# Selection on the first trait
+
+Now perform 10 generations of selecting the best 20 individuals based on their phenotype values for the first trait and using them as parents of the next generation.
+
+```{r}
+# Allocate containers
+nGenerations = 10 + 1 # +1 to store starting generation
+meanGAll = vector("list", length = nGenerations)
+varGAll = vector("list", length = nGenerations)
+corGAll = numeric(nGenerations)
+
+# Save the starting values
+meanGAll[[1]] = meanG(basePop)
+varGAll[[1]] = varG(basePop)
+corGAll[1] = cov2cor(varGAll[[1]])[2, 1]
+
+# First selection step
+nSelected = 20
+newPopSelected = selectInd(pop = basePop,
+                           nInd = nSelected,
+                           use = "???",
+                           trait = ???)
+
+# Selection over many generations
+for (generation in 1:(nGenerations - 1)) {
+  # Cross parents, phenotype progeny, and select new parents
+  newPop = randCross(newPopSelected, nCrosses = nInd(basePop))
+  ??? = setPheno(newPop, h2 = h2s)
+  newPopSelected = selectInd(pop = ???,
+                             nInd = nSelected,
+                             use = "???",
+                             trait = ???)
+  # Save summaries
+  meanGAll[[1 + generation]] = meanG(???)
+  varGAll[[1 + generation]] = varG(???)
+  corGAll[1 + generation] = cov2cor(varGAll[[1 + generation]])[2, 1]
+}
+
+# Plot results
+meanGTrait1 = sapply(meanGAll, function(x) x[1])
+meanGTrait2 = sapply(meanGAll, function(x) x[2])
+meanRanges = range(c(meanGTrait1, meanGTrait2))
+
+varGTrait1 = sapply(varGAll, function(x) x[1, 1])
+varGTrait2 = sapply(varGAll, function(x) x[2, 2])
+varRanges = range(c(varGTrait1, varGTrait2))
+
+# Plot mean of genetic values over time
+plot(x = 1:nGenerations, y = meanGTrait1, type = "l", col = "black", lwd = 3,
+     xlab = "Generation", ylab = "Mean of genetic values", ylim = meanRanges)
+lines(x = 1:nGenerations, y = meanGTrait2, type = "l", col = "purple", lty = 2, lwd = 3)
+legend(x = "topleft", legend = c("1", "2"), title = "Trait",
+       lwd = 3, lty = c(1, 2), col = c("black", "purple"))
+
+# Plot variance of genetic values over time
+plot(x = 1:nGenerations, y = varGTrait1, type = "l", col = "black", lwd = 3,
+     xlab = "Generation", ylab = "Variance of genetic values", ylim = varRanges)
+lines(x = 1:nGenerations, y = varGTrait2, type = "l", col = "purple", lty = 2, lwd = 3)
+legend(x = "topleft", legend = c("1", "2"), title = "Trait",
+       lwd = 3, lty = c(1, 2), col = c("black", "purple"))
+
+# Plot correlation between genetic values over time
+plot(x = 1:nGenerations, y = corGAll, type = "l", col = "black", lwd = 3,
+     xlab = "Generation", ylab = "Genetic correlation")
+```
+
+# Selection on an index of two traits
+
+Now perform a parallel selection experiment from the base population for 10 generations of selecting the best 20 performing individuals based on an index of phenotypes for the first and the second trait and using these individuals as parents of the next generation. For index selection pass the `selIndex()` function to the `trait` argument in `selectInd()` and additional arguments `b = c(0.5, 0.5)` (equal weights for the traits) and `scale = TRUE` (make both traits equally important) - like this `selectInd(newPop, nInd = nSelected, use = "pheno", trait = selIndex, b = c(0.5, 0.5), scale = TRUE)`. 
+
+```{r}
+???
+```
+
+What do the results from the two selection scenarios show you about the trends for the first and second trait?
+
+# EXTRA: Repeat this exercise with different genetic parameters
+
+To gain experience with selection on correlated traits, repeat this exercise with different genetic correlation between traits. For example, try setting genetic correlation to -0.75, 0, and 0.75. Can you predict the outcome of such simulations and later corroborate your predictions with a simulation? You can also change heritability for the trait that you are selecting on.
