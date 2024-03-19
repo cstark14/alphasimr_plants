@@ -17,7 +17,7 @@ Xpackagers <- c('AlphaSimR','bWGR','parallel','foreach','doParallel',
                 'ranger','Rcpp','keras','verification','rrBLUP',
                 'reshape2','ScottKnott','viridis')
 XXX <- lapply(Xpackagers, function(x){suppressMessages(require(x,quietly = TRUE, character.only = TRUE))})
-
+setwd("C:/Users/Cristian/Documents/GitHub/alphasimr_plants/03_HybridBreeding/TwoPartGS_CStark")
 library(package = "AlphaSimR")
 
 # ---- Load global parameters ----

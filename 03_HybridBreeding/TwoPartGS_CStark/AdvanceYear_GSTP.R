@@ -47,7 +47,12 @@ FemaleHybridYT3 = setPheno(FemaleHybridYT3, reps = repYT3, p = p)
 if (exists("gsModel")) {
   MaleYT1 = setEBV(MaleYT1, gsModel)
   FemaleYT1 = setEBV(FemaleYT1, gsModel)
-} else {
+} else if (exists("bayesB")){
+  MaleYT1@ebv <- gsModelM
+  FemaleYT1@ebv <- gsModelF
+}else {
+  # MaleYT1 = setEBV(MaleYT1, gsModelM)
+  # FemaleYT1 = setEBV(FemaleYT1, gsModelF)
   MaleYT1 = setEBV(MaleYT1, gsModelM)
   FemaleYT1 = setEBV(FemaleYT1, gsModelF)
 }
@@ -70,7 +75,10 @@ FemaleDH = makeDH(FemaleF1, nDH)
 if (exists("gsModel")) {
   MaleDH = setEBV(MaleDH, gsModel)
   FemaleDH = setEBV(FemaleDH, gsModel)
-} else {
+} else if (exists("bayesB")){
+  MaleDH@ebv <- gsModelM
+  FemaleDH@ebv <- gsModelF
+}else {
   MaleDH = setEBV(MaleDH, gsModelM)
   FemaleDH = setEBV(FemaleDH, gsModelF)
 }
