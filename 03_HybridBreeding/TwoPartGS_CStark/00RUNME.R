@@ -22,7 +22,8 @@ library(package = "AlphaSimR")
 
 # ---- Load global parameters ----
 source(file = "GlobalParameters.R")
-scenarioName = "HybridGSTP"
+scenarioName = "HybridGSTP_BayesB"
+bayesB="emBB"
 
 # ---- Create list to store results from reps ----
 results = list()
