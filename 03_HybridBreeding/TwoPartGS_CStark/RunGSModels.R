@@ -20,7 +20,7 @@ if(exists("bayesB")){
   ### below would incorporate geno data for training and for new pop
   #gsModelM = emBB(as.matrix(male_pheno_MC[,-1]),malesGen)
   
-  # got this code while searching online on 4/18/2024 around 8pm. Need to find the source
+  # got this code from the Features/Techniques section -> genomic models
   #maleG = A.mat(pullSnpGeno(MaleTrainPop, snpChip = 2)-1)
   #ans = mixed.solve(y = y, K = G)
   #cor(ans$u, pop@ebv) # results equivalent to RRBLUP 
