@@ -48,13 +48,11 @@ if (exists("gsModel")) {
   MaleYT1 = setEBV(MaleYT1, gsModel)
   FemaleYT1 = setEBV(FemaleYT1, gsModel)
 } else if (exists("bayesB")){
-  MaleYT1@ebv <- gsModelM
-  FemaleYT1@ebv <- gsModelF
+  MaleYT1@ebv <- runGS(sex="MALE",targetPop="YT1",useBayes=exists("bayesB"))
+  FemaleYT1@ebv <- runGS(sex="FEMALE",targetPop="YT1",useBayes=exists("bayesB"))
 }else {
-  # MaleYT1 = setEBV(MaleYT1, gsModelM)
-  # FemaleYT1 = setEBV(FemaleYT1, gsModelF)
-  MaleYT1 = setEBV(MaleYT1, gsModelM)
-  FemaleYT1 = setEBV(FemaleYT1, gsModelF)
+  MaleYT1 = setEBV(MaleYT1, runGS(sex="MALE",targetPop="YT1",useBayes=FALSE))
+  FemaleYT1 = setEBV(FemaleYT1, runGS(sex="FEMALE",targetPop="YT1",useBayes=FALSE))
 }
 
 # Report selection accuracy
@@ -76,11 +74,11 @@ if (exists("gsModel")) {
   MaleDH = setEBV(MaleDH, gsModel)
   FemaleDH = setEBV(FemaleDH, gsModel)
 } else if (exists("bayesB")){
-  MaleDH@ebv <- gsModelM
-  FemaleDH@ebv <- gsModelF
+  MaleDH@ebv <- runGS(sex="MALE",targetPop="DH",useBayes=exists("bayesB"))
+  FemaleDH@ebv <- runGS(sex="FEMALE",targetPop="DH",useBayes=exists("bayesB"))
 }else {
-  MaleDH = setEBV(MaleDH, gsModelM)
-  FemaleDH = setEBV(FemaleDH, gsModelF)
+  MaleDH = setEBV(MaleDH, runGS(sex="MALE",targetPop="DH",useBayes=FALSE))
+  FemaleDH = setEBV(FemaleDH, runGS(sex="FEMALE",targetPop="DH",useBayes=FALSE))
 }
 # Select using EBVs
 MaleDH = selectInd(selectWithinFam(MaleDH, famMax, use = "ebv"), nInbred2, use = "ebv")
@@ -104,9 +102,12 @@ for(cycle in 1:nCyclesPI){
     if (exists("gsModel")) {
       MaleParents = setEBV(MaleParents, gsModel)
       FemaleParents = setEBV(FemaleParents, gsModel)
+    } else if (exists("bayesB")){
+      MaleParents@ebv <- runGS(sex="MALE",targetPop="Parent",useBayes=exists("bayesB"))
+      FemaleParents@ebv <- runGS(sex="FEMALE",targetPop="Parent",useBayes=exists("bayesB"))
     } else {
-      MaleParents   = setEBV(MaleParents, gsModelM)
-      FemaleParents = setEBV(FemaleParents, gsModelF)
+      MaleParents = setEBV(MaleParents, runGS(sex="MALE",targetPop="Parent",useBayes=FALSE))
+      FemaleParents = setEBV(MaleParents, runGS(sex="FEMALE",targetPop="Parent",useBayes=FALSE))
     }
     # Report selection accuracy
     accPI$accPI[count] = c((cor(MaleParents@ebv,MaleParents@gv) +
@@ -126,9 +127,12 @@ for(cycle in 1:nCyclesPI){
     if (exists("gsModel")) {
       MaleParents = setEBV(MaleParents, gsModel)
       FemaleParents = setEBV(FemaleParents, gsModel)
+    } else if (exists("bayesB")){
+      MaleParents@ebv <- runGS(sex="MALE",targetPop="Parent",useBayes=exists("bayesB"))
+      FemaleParents@ebv <- runGS(sex="FEMALE",targetPop="Parent",useBayes=exists("bayesB"))
     } else {
-      MaleParents   = setEBV(MaleParents, gsModelM)
-      FemaleParents = setEBV(FemaleParents, gsModelF)
+      MaleParents = setEBV(MaleParents, runGS(sex="MALE",targetPop="Parent",useBayes=FALSE))
+      FemaleParents = setEBV(MaleParents, runGS(sex="FEMALE",targetPop="Parent",useBayes=FALSE))
     }
     # Report selection accuracy
     accPI$accPI[count+cycle-1] = c((cor(MaleParents@ebv,MaleParents@gv) +
