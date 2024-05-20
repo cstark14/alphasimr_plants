@@ -22,6 +22,7 @@ library(package = "AlphaSimR")
 
 # ---- Load global parameters ----
 source(file = "GlobalParameters.R")
+source(file="RunGSModels.R")
 scenarioName = "HybridGSTP_BayesB"
 bayesB="emBB"
 
@@ -85,8 +86,8 @@ for(REP in 1:nReps){
 
   for(year in (nBurnin+1):(nBurnin+nFuture)) {
     cat(" Working on future year:",year,"\n")
-    if(year == 22){break}
-    source(file = "RunGSModels.R")      # Run genomic model
+    #if(year == 22){break}
+    #source(file = "RunGSModels.R")      # Run genomic model
     source(file = "UpdateTesters.R")    # Pick new testers
     source(file = "AdvanceYear_GSTP.R") # Advance yield trials by a year and cycle parents
     source(file = "StoreTrainPop.R")    # Store training population

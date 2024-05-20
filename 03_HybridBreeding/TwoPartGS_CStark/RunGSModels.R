@@ -68,7 +68,7 @@ runGS <- function(sex="MALE",targetPop="YT1",useBayes=exists("bayesB")){
       maleParentGen <- data.frame(i="Parent",pullSnpGeno(MaleParents,simParam = SP))
       malesGen <- rbind(maleTrainGen,maleParentGen)
     } else{
-      print(paste0("No target pop found for ",targetPop," . Please choose from YT1, DH, or Parent"))
+      cat(paste0("No target pop found for ",targetPop," . Please choose from YT1, DH, or Parent"))
       break
     }
     
@@ -135,7 +135,7 @@ runGS <- function(sex="MALE",targetPop="YT1",useBayes=exists("bayesB")){
     gsModelF <- as.matrix(gsModelF$hat[femalesGen$i==targetPop],ncol=1)
     return(gsModelF)
   } else{
-    print(paste0("Sex (",sex,") did not match either MALE or FEMALE."))
+    cat(paste0("Sex (",sex,") did not match either MALE or FEMALE."))
   }
 }
 
