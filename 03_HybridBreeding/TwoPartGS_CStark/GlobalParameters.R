@@ -1,7 +1,7 @@
 # Global Parameters
 
 # ---- Number of simulation replications and breeding cycles ----
-nReps   = 1    # Number of simulation replicates
+nReps   = 3    # Number of simulation replicates
 nBurnin = 20   # Number of years in burnin phase
 nFuture = 20   # Number of years in future phase
 nCycles = nBurnin + nFuture

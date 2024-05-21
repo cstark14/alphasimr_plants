@@ -2,11 +2,11 @@
 library(package = "dplyr")
 
 # Read in results
-df <- bind_rows(readRDS("HybridGSTP.rds"))
-df2 <- bind_rows(readRDS("HybridGSTP_accPI.rds"))
+df <- bind_rows(readRDS("HybridGSTP_BayesB.rds"))
+df2 <- bind_rows(readRDS("HybridGSTP_BayesB_accPI.rds"))
 
 # Plot results
-png("Results.png", height = 800, width = 600)
+png("HybridGSTP_BayesB_Results.png", height = 800, width = 600)
 par(mfrow=c(4,2))
 
 # Inbred Genetic Gain

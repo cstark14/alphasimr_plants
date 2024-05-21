@@ -16,6 +16,7 @@ Xpackagers <- c('AlphaSimR','bWGR','parallel','foreach','doParallel',
                 'reshape','ggplot2','gridExtra','lubridate','plyr',
                 'ranger','Rcpp','keras','verification','rrBLUP',
                 'reshape2','ScottKnott','viridis')
+#install.packages(Xpackagers)
 XXX <- lapply(Xpackagers, function(x){suppressMessages(require(x,quietly = TRUE, character.only = TRUE))})
 #setwd("~/Documents/GitHub/alphasimr_plants/03_HybridBreeding/TwoPartGS_CStark")
 library(package = "AlphaSimR")
@@ -29,7 +30,7 @@ bayesB="emBB"
 # ---- Create list to store results from reps ----
 results = list()
 results_accPI = list()
-REP=1
+REP=2
 for(REP in 1:nReps){
   cat("Working on REP:", REP,"\n")
 
