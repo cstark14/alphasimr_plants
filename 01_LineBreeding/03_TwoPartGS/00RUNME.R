@@ -16,7 +16,7 @@ library(package = "AlphaSimR")
 
 # ---- Load global parameters ----
 source(file = "GlobalParameters.R")
-scenarioName = "LineGSTP"
+scenarioName = "LineGSTP_CS"
 
 # ---- Create list to store results from reps ----
 results = list()

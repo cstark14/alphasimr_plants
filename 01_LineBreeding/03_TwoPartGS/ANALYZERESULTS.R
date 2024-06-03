@@ -2,8 +2,8 @@
 library(package = "dplyr")
 
 # Read in results
-df <- bind_rows(readRDS("LineGSTP.rds"))
-df2 <- bind_rows(readRDS("LineGSTP_accPI.rds"))
+df <- bind_rows(readRDS("LineGSTP_CS.rds"))
+df2 <- bind_rows(readRDS("LineGSTP_CS_accPI.rds"))
 
 # Plot results
 png("Results.png", height = 800, width = 300)
