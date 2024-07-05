@@ -2,12 +2,15 @@
 library(package = "dplyr")
 
 # Read in results
-df <- bind_rows(readRDS("LineGSTP_CS.rds"))
-df2 <- bind_rows(readRDS("LineGSTP_CS_accPI.rds"))
+scenarioName="LineGSTP_BayesB"
+
+# Read in results
+df <- bind_rows(readRDS(paste0(scenarioName,".rds")))
+df2 <- bind_rows(readRDS(paste0(scenarioName,"_accPI.rds")))
 
 # Plot results
-png("Results.png", height = 800, width = 300)
-par(mfrow=c(4,1))
+png(paste0(scenarioName,"_Results.png"), height = 800, width = 600)
+par(mfrow=c(4,2))
 
 # Genetic Gain
 plot(-19:20,rowMeans(matrix(df$meanG,ncol = max(df$rep))),type="l",

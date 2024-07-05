@@ -1,12 +1,14 @@
 # install.packages(pkgs = "dplyr")
 library(package = "dplyr")
 
+scenarioName="LineGSTP_BayesB"
+
 # Read in results
-df <- bind_rows(readRDS("HybridGSTP_BayesB.rds"))
-df2 <- bind_rows(readRDS("HybridGSTP_BayesB_accPI.rds"))
+df <- bind_rows(readRDS(paste0(scenarioName,".rds")))
+df2 <- bind_rows(readRDS(paste0(scenarioName,"_accPI.rds")))
 
 # Plot results
-png("HybridGSTP_BayesB_Results.png", height = 800, width = 600)
+png(paste0(scenarioName,"_Results.png"), height = 800, width = 600)
 par(mfrow=c(4,2))
 
 # Inbred Genetic Gain

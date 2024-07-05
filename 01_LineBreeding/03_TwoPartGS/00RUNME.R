@@ -12,11 +12,20 @@
 # ---- Clean environment and load packages ----
 rm(list = ls())
 # install.packages(pkgs = "AlphaSimR")
-library(package = "AlphaSimR")
+#library(package = "AlphaSimR")
+Xpackagers <- c('AlphaSimR','bWGR','parallel','foreach','doParallel',
+                'reshape','ggplot2','gridExtra','lubridate','plyr',
+                'ranger','Rcpp','keras','verification','rrBLUP',
+                'reshape2','ScottKnott','viridis')
+#install.packages(Xpackagers)
+XXX <- lapply(Xpackagers, function(x){suppressMessages(require(x,quietly = TRUE, character.only = TRUE))})
 
 # ---- Load global parameters ----
 source(file = "GlobalParameters.R")
-scenarioName = "LineGSTP_CS"
+source(file="RunGSModels.R")
+#scenarioName = "LineGSTP_CS"
+scenarioName = "LineGSTP_BayesB"
+bayesB="emBB"
 
 # ---- Create list to store results from reps ----
 results = list()

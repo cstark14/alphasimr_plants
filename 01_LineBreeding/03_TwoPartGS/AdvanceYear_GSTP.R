@@ -16,7 +16,15 @@ AYT = setPheno(AYT, varE = varE, reps = repAYT)
 
 # Stage 3 - apply genomic selection
 # NOTE: HDRW removed because phenotyping not needed
-DH = setEBV(DH, gsModel)
+#DH = setEBV(DH, gsModel)
+# Predict GCA of DHs
+if (exists("gsModel")) {
+  DH = setEBV(DH, gsModel)
+} else if (exists("bayesB")){
+  DH@ebv <- runGS(sex=NA,targetPop="DH",useBayes=exists("bayesB"))
+}else {
+  DH = setEBV(DH, runGS(sex=NA,targetPop="DH",useBayes=FALSE))
+}
 output$accSel[year] = cor(DH@gv, DH@ebv)
 PYT = selectWithinFam(DH, famMax,use = "ebv")
 PYT = selectInd(PYT, nPYT, use="ebv")
@@ -36,7 +44,14 @@ for(cycle in 1:nCyclesPI){
       Parents = randCross(Parents, nCrossPI)
     }
     # 1. Select best F1s using GS
-    Parents = setEBV(Parents, gsModel)
+    #Parents = setEBV(Parents, gsModel)
+    if (exists("gsModel")) {
+      Parents = setEBV(Parents, gsModel)
+    } else if (exists("bayesB")){
+      Parents@ebv <- runGS(sex=NA,targetPop="Parent",useBayes=exists("bayesB"))
+    } else {
+      Parents = setEBV(Parents, runGS(sex=NA,targetPop="Parent",useBayes=FALSE))
+    }
     # Report selection accuracy
     accPI$accPI[count] = cor(Parents@gv, Parents@ebv)
     # F1s to advance to product development
@@ -48,7 +63,14 @@ for(cycle in 1:nCyclesPI){
     Parents = randCross(Parents, nCrossPI)
   } else {
     # 1. Select best F1s using GS
-    Parents = setEBV(Parents, gsModel)
+    #Parents = setEBV(Parents, gsModel)
+    if (exists("gsModel")) {
+      Parents = setEBV(Parents, gsModel)
+    } else if (exists("bayesB")){
+      Parents@ebv <- runGS(sex=NA,targetPop="Parent",useBayes=exists("bayesB"))
+    } else {
+      Parents = setEBV(Parents, runGS(sex=NA,targetPop="Parent",useBayes=FALSE))
+    }
     # Report selection accuracy
     accPI$accPI[count+cycle-1] = cor(Parents@gv, Parents@ebv)
     # F1s to advance to next cycle as new parents

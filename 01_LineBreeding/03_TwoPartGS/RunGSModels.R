@@ -2,8 +2,50 @@
 
 cat("  Running GS model\n")
 #gsModel = RRBLUP(TrainPop)
-runGS <- function(sex="MALE",targetPop="YT1",useBayes=exists("bayesB")){
-  if(sex=="MALE"){
+runGS <- function(sex=NA,targetPop="YT1",useBayes=exists("bayesB")){
+  if(is.na(sex)){
+    if(useBayes==FALSE){
+      gsModel = RRBLUP(TrainPop)
+      return(gsModel)
+    }
+    TrainPheno <- data.frame(i="Training",TrainPop@pheno[,1])
+    TrainGen <- data.frame(i="Training",pullSnpGeno(TrainPop,simParam = SP))
+    
+    if(targetPop=="YT1"){
+      YT1Gen <- data.frame(i="YT1",pullSnpGeno(YT1,simParam = SP))
+      Gen <- rbind(TrainGen,YT1Gen)
+    } else if(targetPop=="DH"){
+      DHGen <- data.frame(i="DH",pullSnpGeno(DH,simParam = SP))
+      Gen <- rbind(TrainGen,DHGen)
+    } else if(targetPop=="Parent"){
+      ParentGen <- data.frame(i="Parent",pullSnpGeno(Parents,simParam = SP))
+      Gen <- rbind(TrainGen,ParentGen)
+    } else{
+      cat(paste0("No target pop found for ",targetPop," . Please choose from YT1, DH, or Parent"))
+      break
+    }
+    
+    tries = 1
+    # Repeat loop
+    repeat {
+      if (tries > 5) {
+        break
+      } 
+      ### below would incorporate geno data for training and for new pop
+      gsModel = emBB(as.matrix(TrainPheno[,-1]),as.matrix(Gen[,-1]))
+      if(!is.na(gsModel$Ve)){break}
+      # Increment x by 1
+      tries = tries + 1
+    }
+    if(anyNA(gsModel$hat)){
+      gsModel$hat=rnorm(length(gsModel$hat))
+    } 
+    
+    ###Subset out the num in training pop?
+    #pop@ebv <- as.matrix(fit$hat[pheno_MC$i == i],ncol=1)
+    gsModel <- as.matrix(gsModel$hat[Gen$i==targetPop],ncol=1)
+    return(gsModel)
+  }else if(sex=="MALE"){
     if(useBayes==FALSE){
       gsModelM = RRBLUP(MaleTrainPop)
       return(gsModelM)
