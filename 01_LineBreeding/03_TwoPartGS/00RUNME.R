@@ -24,8 +24,11 @@ XXX <- lapply(Xpackagers, function(x){suppressMessages(require(x,quietly = TRUE,
 source(file = "GlobalParameters.R")
 source(file="RunGSModels.R")
 #scenarioName = "LineGSTP_CS"
-scenarioName = "LineGSTP_BayesB"
+scenarioName = "LineGSTP_BayesB_retrainNA"
 bayesB="emBB"
+
+### retrain: TRUE (normal yearly), 5/4/2 (every 5/4/2), FALSE (none)
+retrain = FALSE
 
 # ---- Create list to store results from reps ----
 results = list()
@@ -77,7 +80,10 @@ for(REP in 1:nReps){
     cat(" Working on future year:",year,"\n")
     source(file = "RunGSModels.R")      # Run genomic model
     source(file = "AdvanceYear_GSTP.R")   # Advance yield trials by a year
-    source(file = "StoreTrainPop.R")    # Store training population
+    # Store training population
+    if(retrain){source(file = "StoreTrainPop.R")} else if(is.numeric(retrain)){
+      source(file = "StoreTrainPop_UpdateEvery5.R")
+    } else{}  
     # Report results
     output$meanG[year] = meanG(DH)
     output$varG[year]  = varG(DH)
