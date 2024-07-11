@@ -23,9 +23,9 @@ XXX <- lapply(Xpackagers, function(x){suppressMessages(require(x,quietly = TRUE,
 # ---- Load global parameters ----
 source(file = "GlobalParameters.R")
 source(file="RunGSModels.R")
-#scenarioName = "LineGSTP_CS"
-scenarioName = "LineGSTP_BayesB_retrainNA"
-bayesB="emBB"
+scenarioName = "LineGSTP_CS_noRetrain"
+#scenarioName = "LineGSTP_BayesB_retrainNA"
+#bayesB="emBB"
 
 ### retrain: TRUE (normal yearly), 5/4/2 (every 5/4/2), FALSE (none)
 retrain = FALSE

@@ -2,7 +2,7 @@
 library(package = "dplyr")
 
 # Read in results
-scenarioName="LineGSTP_BayesB"
+#scenarioName="LineGSTP_BayesB"
 
 # Read in results
 df <- bind_rows(readRDS(paste0(scenarioName,".rds")))
