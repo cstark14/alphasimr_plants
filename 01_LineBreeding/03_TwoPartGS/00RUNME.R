@@ -9,11 +9,31 @@
 # and conventional breeding for product development. Applies GS to advance
 # individuals from DH to make PYT as well as in population improvement.
 
+### empirically looks like these results might be plausible
+
 #### standardize the burnin to be the same across all simulations, run for 40? reps,
 ##### change plots to ggplot and overlay into a single graph/plot (better viz)
+#### have baseline of continuing pheno selection rather than GS
+
+######## for later, once confident with simulations 
+#### if we aren't retraining, we can do speed breeding/rapid cycling without phenotyping.
+###### they only have 2 rapid cycles per year in the pop improvement
+
+## musings from Dan
+### maybe more important than model and retraining, would be to create an ideal population for long term gain
+#### makes genomic selection and rapid cycling most effective
+#### best pop for genomic prediction has intermediate num of segregating loci (relative to trait),
+#### (accuracy = #indiv/#loci * heritability) large num loci means ridiculously large pop
+#### F2/biparental population has 60 loci, but runs out of diversity fast
+#### wild diversity population has 100s of millions of loci
+#### design a population maybe MAGIC pop of 8 or so (which normally are only discussed for QTL mapping) --- 800ish effective loci, 1000 indivs, high heritability = 0.5 accuracy
+#### time and cost are at play because num of gens/crossings to create MAGIC pop
 
 # ---- Clean environment and load packages ----
 rm(list = ls())
+
+#### probably load here the burn in pop
+
 # install.packages(pkgs = "AlphaSimR")
 #library(package = "AlphaSimR")
 Xpackagers <- c('AlphaSimR','bWGR','parallel','foreach','doParallel',
