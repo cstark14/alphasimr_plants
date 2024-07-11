@@ -29,6 +29,8 @@
 #### design a population maybe MAGIC pop of 8 or so (which normally are only discussed for QTL mapping) --- 800ish effective loci, 1000 indivs, high heritability = 0.5 accuracy
 #### time and cost are at play because num of gens/crossings to create MAGIC pop
 
+#### once sims are good, get to year 0, build a MAGIC pop, then continue with GS
+
 # ---- Clean environment and load packages ----
 rm(list = ls())
 
