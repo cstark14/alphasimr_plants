@@ -27,7 +27,7 @@ scenarioName = "LineGSTP_CS_noRetrain"
 #scenarioName = "LineGSTP_BayesB_retrainNA"
 #bayesB="emBB"
 
-### retrain: TRUE (normal yearly), 5/4/2 (every 5/4/2), FALSE (none)
+### retrain: TRUE (normal yearly), 5 (every 5 years), FALSE (none)
 retrain = FALSE
 
 # ---- Create list to store results from reps ----
