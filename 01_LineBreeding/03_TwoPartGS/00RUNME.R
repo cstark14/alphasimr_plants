@@ -9,6 +9,9 @@
 # and conventional breeding for product development. Applies GS to advance
 # individuals from DH to make PYT as well as in population improvement.
 
+#### standardize the burnin to be the same across all simulations, run for 40? reps,
+##### change plots to ggplot and overlay into a single graph/plot (better viz)
+
 # ---- Clean environment and load packages ----
 rm(list = ls())
 # install.packages(pkgs = "AlphaSimR")
