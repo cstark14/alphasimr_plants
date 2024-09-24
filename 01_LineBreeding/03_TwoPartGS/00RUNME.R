@@ -11,6 +11,8 @@
 
 ### empirically looks like these results might be plausible
 
+### Verify bWGR RRblup works same as AlphaSimR
+
 #### standardize the burnin to be the same across all simulations, run for 40? reps,
 ##### change plots to ggplot and overlay into a single graph/plot (better viz)
 #### have baseline of continuing pheno selection rather than GS
